@@ -49,16 +49,38 @@ Dr. Gupt isn't just another AI assistant—it's a healthcare revolution in your 
 
 ![dr-gupt2](https://github.com/user-attachments/assets/9b973603-eedc-4d81-9ee9-d82f287f9c3c)
 
-### System Flow  
+
+### Architecture Diagram
 ```mermaid
 graph TD
-    A[User Call] --> B(Exotel)
-    B --> C[Sarvam STT]
-    C --> D[AI Diagnosis]
-    D --> E[Sarvam TTS]
-    E --> F[User Response]
-    D --> G[Clinic Lookup Tool]
-    G --> H[Practo Booking]
+    A["User Phone Call"] --> B["Exotel Telephony Platform"]
+    B --> C["Backend Server"]
+
+    subgraph RAG_Processing
+        C --> D["Sarvam STT\nSpeech-to-Text"]
+        D --> E["LLM Agent\n(Sarvam Chat Completion)"]
+        E --> F{Medical Query?}
+        F -->|Yes| G["Query Knowledge Base"]
+        F -->|No| H["Direct Response"]
+        G --> I["Vector Database\nEmbedded Knowledge Base"]
+        I --> J["Relevant Medical Info"]
+        J --> E
+    end
+
+    E --> K{Need Appointment?}
+    K -->|Yes| L["Extract Parameters:\n- Location\n- Symptoms\n- Preferred Time"]
+    K -->|No| M["Sarvam TTS\nText-to-Speech"]
+
+    L --> N["Appointment Agent"]
+    N --> O["Query Clinic Database\nArea: Azad Chowk, Delhi"]
+    O --> P["Practo API Integration"]
+    P --> Q["Available Doctors\nTime Slots"]
+    Q --> R["Book Appointment\nConfidential ID"]
+    R --> S["Send WhatsApp Confirmation"]
+    S --> M
+
+    M --> B
+    B --> T["User Receives\nVoice Response"]
 ```
 
 
@@ -118,8 +140,9 @@ dr-gupt/
 </div>
 
 
+ 
 ## 📜 License
-MIT License | © 2024 Dr. Gupt Team
+MIT License | © 2025 Dr. Gupt Team
 
 ---
 
