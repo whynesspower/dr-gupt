@@ -1,6 +1,11 @@
-# Dr. Gupt - AI-Powered Sexual Health Assistant for Rural India  
+![image](https://github.com/user-attachments/assets/15aa42fd-6ab3-4fa3-8467-4e10845b6bc2)
 
-![Project Banner](assets/banner.png) *(Replace with your image path)*  
+
+
+# Dr. Gupt - AI-Powere![dr-gupt22](https://github.com/user-attachments/assets/155f399d-fd5b-422e-942c-3df026402b15)
+AI agent for the next billion people. AI for bharat.   
+
+Demo Video: https://youtu.be/zdJBMn49P6Q
 
 ## 🌟 Overview  
 Dr. Gupt is a **privacy-first AI assistant** that provides **anonymous, judgment-free sexual health guidance** in Hindi via phone calls. Designed for rural India, it combats stigma and connects users to certified practitioners.  
@@ -27,6 +32,8 @@ Dr. Gupt is a **privacy-first AI assistant** that provides **anonymous, judgment
 
 ---
 
+
+
 ## 📞 How It Works  
 
 ### User Flow  
@@ -37,6 +44,9 @@ Dr. Gupt is a **privacy-first AI assistant** that provides **anonymous, judgment
    - Self-care tips  
    - Clinic referrals *(optional)*  
 4. **Book** → Discreet appointment via WhatsApp/SMS  
+
+![dr-gupt2](https://github.com/user-attachments/assets/9b973603-eedc-4d81-9ee9-d82f287f9c3c)
+
 
 ### System Flow  
 graph TD
@@ -97,6 +107,8 @@ Improve Tools: Enhance clinic lookup accuracy
 
 Localize: Add more regional dialects
 
+Building for the interest of MeiTy
+![image](https://github.com/user-attachments/assets/f6aeb6c2-5cdd-4b50-952c-ca3b89870750)
 
 
 📜 License
