@@ -1,7 +1,7 @@
 
 
 
-# Dr. Gupt - AI-Powered Health Revolution! 🩺
+# Dr. Gupt - A hotline for the "Gupt Rogi"! 🩺
 
 ![dr-gupt22](https://github.com/user-attachments/assets/155f399d-fd5b-422e-942c-3df026402b15)
 
