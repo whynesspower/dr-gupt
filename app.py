@@ -3,7 +3,7 @@ import base64
 import json
 import logging
 from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -16,6 +16,8 @@ import uuid
 import tempfile
 import shutil
 import wave
+from app.exotel import ExotelClient
+from app.sexual_wellness_routes import router as sexual_wellness_router
 
 # Load environment variables
 load_dotenv()
@@ -43,6 +45,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include the sexual wellness router
+app.include_router(sexual_wellness_router)
+
 # Create static directory if it doesn't exist
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -53,6 +58,14 @@ if not sarvam_api_key:
     raise ValueError("SARVAM_API environment variable not set")
 
 sarvam_client = SarvamAI(api_subscription_key=sarvam_api_key)
+
+# Initialize Exotel client
+try:
+    exotel_client = ExotelClient()
+    logger.info("Exotel client initialized successfully")
+except ValueError as e:
+    logger.warning(f"Exotel client initialization failed: {str(e)}")
+    exotel_client = None
 
 # Models for request/response
 class ChatMessage(BaseModel):
@@ -76,6 +89,25 @@ class TextToSpeechRequest(BaseModel):
     pitch: float = 0.0
     pace: float = 1.0
     loudness: float = 1.0
+
+# Exotel request models
+class ExotelCallRequest(BaseModel):
+    from_number: str
+    to_number: str
+    caller_id: str
+    call_type: str = "trans"
+    time_limit: int = 14400
+    status_callback: Optional[str] = None
+
+class ExotelSmsRequest(BaseModel):
+    from_number: str
+    to_number: str
+    body: str
+    priority: str = "normal"
+    encoding_type: str = "plain"
+
+class ExotelCallDetailsRequest(BaseModel):
+    call_sid: str
 
 # Connection manager for WebSockets
 class ConnectionManager:
@@ -125,20 +157,29 @@ def audio_to_base64(audio_bytes: bytes) -> str:
 
 # API Routes
 @app.get("/")
-async def root():
+def root():
     return {"message": "Welcome to Dr. Gupt AI Assistant API"}
+
+@app.get("/sexual-wellness")
+def sexual_wellness_page():
+    return FileResponse("static/sexual_wellness.html")
 
 @app.post("/api/chat")
 async def chat_completion(request: ChatRequest):
     try:
         messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
         
-        response = sarvam_client.chat.completions.create(
-            model=request.model,
-            messages=messages,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens if request.max_tokens else None
-        )
+        # Direct API call to Sarvam AI
+        payload = {
+            "model": request.model,
+            "messages": messages,
+            "temperature": request.temperature
+        }
+        
+        if request.max_tokens:
+            payload["max_tokens"] = request.max_tokens
+            
+        response = sarvam_client.chat.completions(**payload)
         
         return response
     except Exception as e:
@@ -214,13 +255,13 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                 
                 # Get AI response
                 try:
-                    response = sarvam_client.chat.completions.create(
+                    response = sarvam_client.chat.completions(
                         model="sarvam-m",
                         messages=conversation_history,
                         temperature=0.7
                     )
                     
-                    ai_message = response.choices[0].message.content
+                    ai_message = response['choices'][0]['message']['content']
                     conversation_history.append({"role": "assistant", "content": ai_message})
                     
                     await manager.send_message(
@@ -269,13 +310,15 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
                         conversation_history.append({"role": "user", "content": transcript})
                         
                         # Get AI response
-                        response = sarvam_client.chat.completions.create(
-                            model="sarvam-m",
-                            messages=conversation_history,
-                            temperature=0.7
-                        )
+                        payload = {
+                            "model": "sarvam-m",
+                            "messages": conversation_history,
+                            "temperature": 0.7
+                        }
                         
-                        ai_message = response.choices[0].message.content
+                        response = sarvam_client.chat.completions(**payload)
+                        
+                        ai_message = response['choices'][0]['message']['content']
                         conversation_history.append({"role": "assistant", "content": ai_message})
                         
                         # Convert AI response to speech
@@ -328,6 +371,61 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
     except Exception as e:
         logger.error(f"WebSocket error: {str(e)}")
         manager.disconnect(client_id)
+
+# Exotel API endpoints
+def get_exotel_client():
+    if exotel_client is None:
+        raise HTTPException(status_code=503, detail="Exotel client not initialized")
+    return exotel_client
+
+@app.post("/api/exotel/call")
+async def make_call(request: ExotelCallRequest, client: ExotelClient = Depends(get_exotel_client)):
+    try:
+        response = client.make_call(
+            from_number=request.from_number,
+            to_number=request.to_number,
+            caller_id=request.caller_id,
+            call_type=request.call_type,
+            time_limit=request.time_limit,
+            status_callback=request.status_callback
+        )
+        return response
+    except Exception as e:
+        logger.error(f"Error making Exotel call: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to make call: {str(e)}")
+
+@app.post("/api/exotel/sms")
+async def send_sms(request: ExotelSmsRequest, client: ExotelClient = Depends(get_exotel_client)):
+    try:
+        response = client.send_sms(
+            from_number=request.from_number,
+            to_number=request.to_number,
+            body=request.body,
+            priority=request.priority,
+            encoding_type=request.encoding_type
+        )
+        return response
+    except Exception as e:
+        logger.error(f"Error sending Exotel SMS: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send SMS: {str(e)}")
+
+@app.get("/api/exotel/call/{call_sid}")
+async def get_call_details(call_sid: str, client: ExotelClient = Depends(get_exotel_client)):
+    try:
+        response = client.get_call_details(call_sid)
+        return response
+    except Exception as e:
+        logger.error(f"Error getting call details: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get call details: {str(e)}")
+
+@app.get("/api/exotel/call/{call_sid}/recordings")
+async def get_call_recordings(call_sid: str, client: ExotelClient = Depends(get_exotel_client)):
+    try:
+        response = client.get_call_recordings(call_sid)
+        return response
+    except Exception as e:
+        logger.error(f"Error getting call recordings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get call recordings: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
