@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sexual Wellness Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+        .subtitle {
+            font-style: italic;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        .chat-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message {
+            background-color: #e9f5ff;
+            color: #333;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .agent-message {
+            background-color: #f0f0f0;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+        .message-time {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 5px;
+            text-align: right;
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input input:focus {
+            border-color: #6a11cb;
+        }
+        .chat-input button {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .chat-input button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .chat-input button:active {
+            transform: translateY(1px);
+        }
+        .follow-up-container {
+            margin-top: 15px;
+        }
+        .follow-up-title {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+        .follow-up-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .follow-up-btn {
+            background-color: #e9f5ff;
+            border: 1px solid #c1e0ff;
+            border-radius: 15px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .follow-up-btn:hover {
+            background-color: #d0e8ff;
+        }
+        .disclaimer {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .sources {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+        .typing-indicator {
+            display: inline-block;
+            padding: 12px 16px;
+            background-color: #f0f0f0;
+            border-radius: 18px;
+            margin-bottom: 15px;
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #888;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: typing 1.4s infinite both;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+            margin-right: 0;
+        }
+        @keyframes typing {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sexual Wellness Assistant</h1>
+            <div class="subtitle">Confidential guidance for your intimate health questions</div>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="message agent-message">
+                    Hello! I'm your Sexual Wellness Assistant. I can provide information and guidance on sexual health topics. How can I help you today?
+                    <div class="message-time">Just now</div>
+                    <div class="follow-up-container">
+                        <div class="follow-up-title">You might want to ask about:</div>
+                        <div class="follow-up-questions">
+                            <button class="follow-up-btn" onclick="sendFollowUp('What is sexual wellness?')">What is sexual wellness?</button>
+                            <button class="follow-up-btn" onclick="sendFollowUp('How can I improve my sexual health?')">How can I improve my sexual health?</button>
+                            <button class="follow-up-btn" onclick="sendFollowUp('What are common sexual health concerns?')">Common sexual health concerns</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Type your question here..." autocomplete="off">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            Note: This assistant provides educational information only and is not a substitute for professional medical advice. 
+            All interactions are confidential. For personalized guidance, please consult with a healthcare provider.
+        </div>
+    </div>
+
+    <script>
+        // Generate a random client ID
+        const clientId = 'client_' + Math.random().toString(36).substring(2, 15);
+        let socket = null;
+        let isTyping = false;
+        
+        // Connect to WebSocket
+        function connectWebSocket() {
+            socket = new WebSocket(`ws://${window.location.host}/api/sexual-wellness/ws/${clientId}`);
+            
+            socket.onopen = function(e) {
+                console.log('WebSocket connection established');
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                if (data.type === 'response') {
+                    displayAgentMessage(data.data.answer, data.data.sources, data.data.follow_up_questions);
+                } else if (data.type === 'error') {
+                    displayAgentMessage(`Sorry, I encountered an error: ${data.message}`);
+                }
+            };
+            
+            socket.onclose = function(event) {
+                console.log('WebSocket connection closed');
+                // Try to reconnect after a delay
+                setTimeout(connectWebSocket, 3000);
+            };
+            
+            socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+        
+        // Display user message
+        function displayUserMessage(message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'user-message');
+            
+            messageElement.innerHTML = `
+                ${escapeHtml(message)}
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        // Display agent message
+        function displayAgentMessage(message, sources = [], followUpQuestions = []) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'agent-message');
+            
+            let sourcesHtml = '';
+            if (sources && sources.length > 0) {
+                sourcesHtml = '<div class="sources">Based on: ' + 
+                    sources.map(s => `${escapeHtml(s.question)}`).join(', ') + 
+                    '</div>';
+            }
+            
+            let followUpHtml = '';
+            if (followUpQuestions && followUpQuestions.length > 0) {
+                followUpHtml = `
+                    <div class="follow-up-container">
+                        <div class="follow-up-title">You might also want to ask:</div>
+                        <div class="follow-up-questions">
+                            ${followUpQuestions.map(q => 
+                                `<button class="follow-up-btn" onclick="sendFollowUp('${escapeHtml(q)}')">${escapeHtml(q)}</button>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            messageElement.innerHTML = `
+                ${message}
+                <div class="message-time">${getCurrentTime()}</div>
+                ${sourcesHtml}
+                ${followUpHtml}
+            `;
+            
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            if (isTyping) return;
+            
+            isTyping = true;
+            const chatMessages = document.getElementById('chat-messages');
+            const typingElement = document.createElement('div');
+            typingElement.id = 'typing-indicator';
+            typingElement.classList.add('typing-indicator');
+            typingElement.innerHTML = '<span></span><span></span><span></span>';
+            
+            chatMessages.appendChild(typingElement);
+            scrollToBottom();
+        }
+        
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            isTyping = false;
+            const typingElement = document.getElementById('typing-indicator');
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+        
+        // Send message to server
+        function sendMessage(message) {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                connectWebSocket();
+                setTimeout(() => sendMessage(message), 1000);
+                return;
+            }
+            
+            const query = {
+                type: 'query',
+                query: message,
+                user_id: clientId
+            };
+            
+            socket.send(JSON.stringify(query));
+            showTypingIndicator();
+        }
+        
+        // Send follow-up question
+        function sendFollowUp(question) {
+            displayUserMessage(question);
+            sendMessage(question);
+        }
+        
+        // Get current time
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            
+            sendButton.addEventListener('click', function() {
+                const message = userInput.value.trim();
+                if (message) {
+                    displayUserMessage(message);
+                    sendMessage(message);
+                    userInput.value = '';
+                }
+            });
+            
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const message = userInput.value.trim();
+                    if (message) {
+                        displayUserMessage(message);
+                        sendMessage(message);
+                        userInput.value = '';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

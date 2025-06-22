@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Gupt - Exotel Integration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .response {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #ddd;
+            border: none;
+            outline: none;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dr. Gupt - Exotel Integration</h1>
+    
+    <div class="tabs">
+        <button class="tab active" onclick="openTab(event, 'make-call')">Make Call</button>
+        <button class="tab" onclick="openTab(event, 'send-sms')">Send SMS</button>
+        <button class="tab" onclick="openTab(event, 'call-details')">Call Details</button>
+    </div>
+    
+    <div id="make-call" class="tab-content active">
+        <div class="container">
+            <h2>Make a Call</h2>
+            <form id="call-form">
+                <div class="form-group">
+                    <label for="from-number-call">From Number:</label>
+                    <input type="text" id="from-number-call" placeholder="Customer's phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="to-number-call">To Number:</label>
+                    <input type="text" id="to-number-call" placeholder="Agent's phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="caller-id">Caller ID (Exotel Number):</label>
+                    <input type="text" id="caller-id" placeholder="Your Exotel phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="call-type">Call Type:</label>
+                    <select id="call-type">
+                        <option value="trans">Transactional</option>
+                        <option value="promo">Promotional</option>
+                    </select>
+                </div>
+                <button type="submit">Make Call</button>
+            </form>
+            <div class="response" id="call-response"></div>
+        </div>
+    </div>
+    
+    <div id="send-sms" class="tab-content">
+        <div class="container">
+            <h2>Send SMS</h2>
+            <form id="sms-form">
+                <div class="form-group">
+                    <label for="from-number-sms">From Number (Exotel Number):</label>
+                    <input type="text" id="from-number-sms" placeholder="Your Exotel phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="to-number-sms">To Number:</label>
+                    <input type="text" id="to-number-sms" placeholder="Recipient's phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="sms-body">Message:</label>
+                    <textarea id="sms-body" rows="4" placeholder="Enter your message" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority:</label>
+                    <select id="priority">
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <button type="submit">Send SMS</button>
+            </form>
+            <div class="response" id="sms-response"></div>
+        </div>
+    </div>
+    
+    <div id="call-details" class="tab-content">
+        <div class="container">
+            <h2>Get Call Details</h2>
+            <form id="details-form">
+                <div class="form-group">
+                    <label for="call-sid">Call SID:</label>
+                    <input type="text" id="call-sid" placeholder="Call SID from previous call" required>
+                </div>
+                <button type="submit">Get Details</button>
+            </form>
+            <div class="response" id="details-response"></div>
+        </div>
+        
+        <div class="container">
+            <h2>Get Call Recordings</h2>
+            <form id="recordings-form">
+                <div class="form-group">
+                    <label for="recording-sid">Call SID:</label>
+                    <input type="text" id="recording-sid" placeholder="Call SID to get recordings" required>
+                </div>
+                <button type="submit">Get Recordings</button>
+            </form>
+            <div class="response" id="recordings-response"></div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        // Make Call Form
+        document.getElementById("call-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const responseDiv = document.getElementById("call-response");
+            responseDiv.textContent = "Making call...";
+            
+            try {
+                const response = await fetch("/api/exotel/call", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        from_number: document.getElementById("from-number-call").value,
+                        to_number: document.getElementById("to-number-call").value,
+                        caller_id: document.getElementById("caller-id").value,
+                        call_type: document.getElementById("call-type").value
+                    })
+                });
+                
+                const data = await response.json();
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.textContent = "Error: " + error.message;
+            }
+        });
+        
+        // Send SMS Form
+        document.getElementById("sms-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const responseDiv = document.getElementById("sms-response");
+            responseDiv.textContent = "Sending SMS...";
+            
+            try {
+                const response = await fetch("/api/exotel/sms", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        from_number: document.getElementById("from-number-sms").value,
+                        to_number: document.getElementById("to-number-sms").value,
+                        body: document.getElementById("sms-body").value,
+                        priority: document.getElementById("priority").value
+                    })
+                });
+                
+                const data = await response.json();
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.textContent = "Error: " + error.message;
+            }
+        });
+        
+        // Get Call Details Form
+        document.getElementById("details-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const responseDiv = document.getElementById("details-response");
+            responseDiv.textContent = "Getting call details...";
+            
+            try {
+                const callSid = document.getElementById("call-sid").value;
+                const response = await fetch(`/api/exotel/call/${callSid}`);
+                
+                const data = await response.json();
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.textContent = "Error: " + error.message;
+            }
+        });
+        
+        // Get Call Recordings Form
+        document.getElementById("recordings-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const responseDiv = document.getElementById("recordings-response");
+            responseDiv.textContent = "Getting call recordings...";
+            
+            try {
+                const callSid = document.getElementById("recording-sid").value;
+                const response = await fetch(`/api/exotel/call/${callSid}/recordings`);
+                
+                const data = await response.json();
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.textContent = "Error: " + error.message;
+            }
+        });
+    </script>
+</body>
+</html>

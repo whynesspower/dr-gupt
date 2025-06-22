@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Gupt AI Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/recorder-js@1.0.7/dist/recorder.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dr. Gupt AI Assistant</h1>
+            <p>Your AI-powered voice and text assistant</p>
+        </header>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="message system">
+                    <div class="message-content">
+                        Hello! I'm Dr. Gupt, your AI assistant. How can I help you today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <textarea id="text-input" placeholder="Type your message here..."></textarea>
+                <div class="button-group">
+                    <button id="send-button" class="primary-button">Send</button>
+                    <button id="record-button" class="secondary-button">
+                        <span class="record-icon">🎤</span>
+                        <span class="record-text">Record</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-indicator" id="status-indicator">
+            <div class="status-text" id="status-text">Ready</div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
